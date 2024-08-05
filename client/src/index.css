@@ -1,0 +1,59 @@
+/* client/src/index.css */
+body {
+  background-color: #f0f0f0;
+  font-family: Arial, sans-serif;
+}
+.app {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+nav a {
+  margin-right: 10px;
+  text-decoration: none;
+  color: #333;
+}
+form {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+input, textarea {
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+button {
+  padding: 10px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #0056b3;
+}
+.note-list {
+  display: flex;
+  flex-wrap: wrap;
+}
+.note {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 20px;
+  margin: 10px;
+  width: calc(33.333% - 20px);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.note h3 {
+  margin-top: 0;
+}
+.note button {
+  margin-top: 10px;
+}

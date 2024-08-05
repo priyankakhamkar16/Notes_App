@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Notes</title>
+    <link rel="stylesheet" href="view-notes.css">
+</head>
+<body>
+    <div class="navbar">
+        <div class="search-container">
+            <input type="text" placeholder="Search notes..." id="search-bar">
+            <button id="search-button">Search</button>
+        </div>
+    </div>
+    <div class="content">
+        <h1>Your Notes</h1>
+        <div class="actions">
+            <span id="all-notes">All</span>
+            <a href="index.html" id="home-link">Home</a>
+        </div>
+        <div class="notes-container" id="notes-container">
+            <!-- Note items will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('search-button').addEventListener('click', () => {
+            searchNotes();
+        });
+
+        async function searchNotes() {
+            const query = document.getElementById('search-bar').value;
+            try {
+                const response = await fetch(`/api/notes/search?q=${encodeURIComponent(query)}`);
+                const notes = await response.json();
+
+                displayNotes(notes);
+            } catch (error) {
+                console.error('Failed to search notes:', error);
+            }
+        }
+
+        document.getElementById('all-notes').addEventListener('click', () => {
+            loadAllNotes();
+        });
+
+        async function loadAllNotes() {
+            try {
+                const response = await fetch('/api/notes');
+                const notes = await response.json();
+
+                displayNotes(notes);
+            } catch (error) {
+                console.error('Failed to load notes:', error);
+            }
+        }
+
+        function displayNotes(notes) {
+            const notesContainer = document.getElementById('notes-container');
+            notesContainer.innerHTML = ''; // Clear existing notes
+
+            notes.forEach(note => {
+                const noteElement = document.createElement('div');
+                noteElement.classList.add('note');
+                noteElement.dataset.id = note._id; // Store note ID
+
+                noteElement.innerHTML = `
+                    <div class="note-content">
+                        <h2 class="note-title">${note.title}</h2>
+                        <p class="note-description">${note.description}</p>
+                        <div class="note-date">${note.date}</div>
+                    </div>
+                    <div class="note-actions">
+                        <span class="edit-icon" onclick="toggleEditMode('${note._id}')">✎</span>
+                        <span class="delete-icon" onclick="deleteNote('${note._id}')">🗑️</span>
+                    </div>
+                    <div class="edit-form" id="edit-form-${note._id}" style="display: none;">
+                        <input type="text" id="edit-title-${note._id}" value="${note.title}">
+                        <textarea id="edit-description-${note._id}">${note.description}</textarea>
+                        <button onclick="saveNoteChanges('${note._id}')">Save</button>
+                        <button onclick="cancelEdit('${note._id}')">Cancel</button>
+                    </div>
+                `;
+                notesContainer.appendChild(noteElement);
+            });
+        }
+
+        async function toggleEditMode(id) {
+            const editForm = document.getElementById(`edit-form-${id}`);
+            const noteContent = document.querySelector(`.note[data-id="${id}"] .note-content`);
+            
+            if (editForm.style.display === 'none') {
+                editForm.style.display = 'block';
+                noteContent.style.display = 'none';
+            } else {
+                editForm.style.display = 'none';
+                noteContent.style.display = 'block';
+            }
+        }
+
+        async function saveNoteChanges(id) {
+            const title = document.getElementById(`edit-title-${id}`).value;
+            const description = document.getElementById(`edit-description-${id}`).value;
+
+            try {
+                const response = await fetch(`/api/notes/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, description })
+                });
+
+                if (response.ok) {
+                    loadAllNotes(); // Reload notes after editing
+                } else {
+                    console.error('Failed to edit note');
+                }
+            } catch (error) {
+                console.error('Failed to edit note:', error);
+            }
+        }
+
+        async function cancelEdit(id) {
+            toggleEditMode(id); // Hide the edit form and show the note content
+        }
+
+        async function deleteNote(id) {
+            if (confirm('Are you sure you want to delete this note?')) {
+                try {
+                    const response = await fetch(`/api/notes/${id}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        loadAllNotes(); // Reload notes after deletion
+                    } else {
+                        console.error('Failed to delete note');
+                    }
+                } catch (error) {
+                    console.error('Failed to delete note:', error);
+                }
+            }
+        }
+
+        // Initial call to load all notes
+        loadAllNotes();
+    </script>
+</body>
+</html>
